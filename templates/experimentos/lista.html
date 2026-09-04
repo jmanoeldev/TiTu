@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Meus experimentos — TiTu{% endblock %}
+
+{#
+  Contexto esperado nesta view (views/experimentos.py):
+    experimentos   -> queryset de Experimento do usuário logado, já filtrado/ordenado
+    tipo_choices   -> Experimento.TIPO_CHOICES, para popular os dois <select> de tipo
+    tipo_atual     -> valor do filtro aplicado (ou vazio), para manter o select marcado
+    ordenar_atual  -> 'recente' | 'antigo', para manter o select marcado
+#}
+
+{% block content %}
+
+<div class="wrap">
+
+  <div class="page-header">
+    <div>
+      <h1>Meus experimentos</h1>
+      <p>Cada experimento agrupa as réplicas de uma mesma análise.</p>
+    </div>
+  </div>
+
+  <section class="entry-panel">
+    <div class="entry-panel-head">
+      <h2>Adicionar experimento</h2>
+      <span class="step-label">Etapa 1 de 2</span>
+    </div>
+
+    <form method="post" action="{% url 'experimentos:criar' %}">
+      {% csrf_token %}
+
+      {% if form.errors %}
+      <p class="form-errors">Confira os campos abaixo antes de continuar.</p>
+      {% endif %}
+
+      <div class="field-grid">
+        <div class="field">
+          <label for="id_nome">Nome do experimento</label>
+          <input type="text" id="id_nome" name="nome" placeholder="Amostra vinagre A" required>
+        </div>
+
+        <div class="field">
+          <label for="id_data_realizacao">Data de realização</label>
+          <input type="date" id="id_data_realizacao" name="data_realizacao" required>
+        </div>
+
+        <div class="field">
+          <label for="id_tipo">Método volumétrico</label>
+          <select id="id_tipo" name="tipo" required>
+            <option value="" selected disabled>Selecione o método</option>
+            {% for valor, rotulo in tipo_choices %}
+            <option value="{{ valor }}">{{ rotulo }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="entry-panel-foot">
+        <button type="submit" class="btn btn-primary">Continuar</button>
+        <span class="hint">A próxima etapa depende do método escolhido.</span>
+      </div>
+    </form>
+  </section>
+
+  <form method="get" class="toolbar">
+    <select name="tipo" onchange="this.form.submit()">
+      <option value=""{% if not tipo_atual %} selected{% endif %}>Tipo: todos</option>
+      {% for valor, rotulo in tipo_choices %}
+      <option value="{{ valor }}"{% if tipo_atual == valor %} selected{% endif %}>{{ rotulo }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="ordenar" onchange="this.form.submit()">
+      <option value="recente"{% if ordenar_atual == "recente" %} selected{% endif %}>Data: mais recente</option>
+      <option value="antigo"{% if ordenar_atual == "antigo" %} selected{% endif %}>Data: mais antiga</option>
+    </select>
+  </form>
+
+  <div class="ledger">
+    {% for exp in experimentos %}
+    <a href="{% url 'experimentos:detalhe' exp.id %}" class="ledger-row">
+      <span class="swatch {{ exp.tipo }}"></span>
+      <span class="ledger-name">{{ exp.nome }}</span>
+      <span class="ledger-type">{{ exp.get_tipo_display }}</span>
+      <span class="ledger-meta">
+        <time class="data">{{ exp.data_realizacao|date:"d M Y" }}</time>
+        <span class="data">{{ exp.titulacoes.count }} réplica{{ exp.titulacoes.count|pluralize }}</span>
+      </span>
+    </a>
+    {% empty %}
+    <div class="empty-state">
+      <p>Nenhum experimento por aqui ainda. Use o formulário acima para registrar o primeiro.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+{% endblock %}

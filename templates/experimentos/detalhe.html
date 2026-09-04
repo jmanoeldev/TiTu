@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}{{ experimento.nome }} — TiTu{% endblock %}
+
+{#
+  Contexto esperado nesta view (views/titulacoes.py):
+    experimento         -> o Experimento (já filtrado pelo usuário logado)
+    titulacoes           -> queryset de Titulacao desse experimento, em ordem de criação
+    solucoes_titulantes  -> queryset de SolucaoTitulante do usuário, pra popular o <select>
+    form                 -> form de nova titulação (solucao_titulante, volume_titulante, volume_amostra)
+    estatisticas          -> dict calculado em calculos/estatistica.py:
+                              media, desvio_padrao (None com < 2 réplicas),
+                              q_calculado (None com < 3 réplicas), outlier_id (None se nenhuma destoar)
+#}
+
+{% block content %}
+
+<div class="wrap">
+
+  <div class="page-header">
+    <div>
+      <a href="{% url 'experimentos:lista' %}" class="back-link">← Meus experimentos</a>
+      <h1>{{ experimento.nome }}</h1>
+      <p class="meta-line">
+        <span class="swatch {{ experimento.tipo }}"></span>
+        {{ experimento.get_tipo_display }}
+        <time class="data">{{ experimento.data_realizacao|date:"d M Y" }}</time>
+      </p>
+    </div>
+  </div>
+
+  {% if estatisticas.media is not None %}
+  <div class="stats-row">
+    <div class="stat">
+      <span class="stat-label">Média</span>
+      <span class="stat-value data">{{ estatisticas.media|floatformat:5 }} mol/L</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Desvio padrão</span>
+      <span class="stat-value data">{{ estatisticas.desvio_padrao|floatformat:5|default:"—" }}</span>
+    </div>
+    <div class="stat{% if estatisticas.outlier_id %} is-alert{% endif %}">
+      <span class="stat-label">Teste Q de Dixon</span>
+      <span class="stat-value data">
+        {% if estatisticas.q_calculado is not None %}Q = {{ estatisticas.q_calculado|floatformat:2 }}{% else %}Mín. 3 réplicas{% endif %}
+      </span>
+    </div>
+  </div>
+  {% endif %}
+
+  <section class="entry-panel">
+    <div class="entry-panel-head">
+      <h2>Registrar titulação</h2>
+    </div>
+
+    <form method="post" action="{% url 'experimentos:titular' experimento.id %}">
+      {% csrf_token %}
+
+      {% if form.errors %}
+      <p class="form-errors">Confira os campos abaixo antes de continuar.</p>
+      {% endif %}
+
+      <div class="field-grid">
+        <div class="field">
+          <label for="id_solucao_titulante">Solução titulante</label>
+          <select id="id_solucao_titulante" name="solucao_titulante" required>
+            <option value="" selected disabled>Selecione a solução</option>
+            {% for solucao in solucoes_titulantes %}
+            <option value="{{ solucao.id }}">{{ solucao.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="id_volume_titulante">Volume gasto (mL)</label>
+          <input type="number" step="0.01" id="id_volume_titulante" name="volume_titulante" placeholder="21,40" required>
+        </div>
+
+        <div class="field">
+          <label for="id_volume_amostra">Volume da amostra (mL)</label>
+          <input type="number" step="0.01" id="id_volume_amostra" name="volume_amostra" placeholder="10,00" required>
+        </div>
+      </div>
+
+      <div class="entry-panel-foot">
+        <button type="submit" class="btn btn-primary">Registrar titulação</button>
+        <span class="hint">A concentração é calculada automaticamente ao salvar.</span>
+      </div>
+    </form>
+  </section>
+
+  <table class="replicas-table">
+    <thead>
+      <tr>
+        <th>Réplica</th>
+        <th>Solução titulante</th>
+        <th>Volume titulante</th>
+        <th>Volume amostra</th>
+        <th>Concentração</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for titulacao in titulacoes %}
+      <tr{% if titulacao.id == estatisticas.outlier_id %} class="is-outlier"{% endif %}>
+        <td class="label-cell">#{{ forloop.counter }}</td>
+        <td class="label-cell">{{ titulacao.solucao_titulante.nome }}</td>
+        <td class="data">{{ titulacao.volume_titulante }} mL</td>
+        <td class="data">{{ titulacao.volume_amostra }} mL</td>
+        <td class="data">{{ titulacao.concentracao_calculada|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="empty-state">Nenhuma réplica registrada ainda.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if estatisticas.outlier_id %}
+  <p class="alert-note">A réplica destacada está estatisticamente destoante das demais (teste Q).</p>
+  {% endif %}
+
+</div>
+
+{% endblock %}

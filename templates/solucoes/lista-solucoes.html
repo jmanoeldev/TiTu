@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Minhas soluções — TiTu{% endblock %}
+
+{#
+  Contexto esperado nesta view (views/solucoes.py):
+    solucoes -> queryset de SolucaoTitulante do usuário logado
+    form     -> form de cadastro (nome, concentracao_nominal)
+#}
+
+{% block content %}
+
+<div class="wrap">
+
+  <div class="page-header">
+    <div>
+      <h1>Minhas soluções titulantes</h1>
+      <p>Cadastre uma solução e padronize-a para reaproveitar o fator de correção em cada titulação.</p>
+    </div>
+  </div>
+
+  <section class="entry-panel">
+    <div class="entry-panel-head">
+      <h2>Cadastrar solução titulante</h2>
+    </div>
+
+    <form method="post" action="{% url 'solucoes:lista' %}">
+      {% csrf_token %}
+
+      {% if form.errors %}
+      <p class="form-errors">Confira os campos abaixo antes de continuar.</p>
+      {% endif %}
+
+      <div class="field-grid">
+        <div class="field">
+          <label for="id_nome">Nome</label>
+          <input type="text" id="id_nome" name="nome" placeholder="NaOH 0,1 M — Lote 3" required>
+        </div>
+
+        <div class="field">
+          <label for="id_concentracao_nominal">Concentração nominal (mol/L)</label>
+          <input type="number" step="0.00001" id="id_concentracao_nominal" name="concentracao_nominal" placeholder="0,1" required>
+        </div>
+      </div>
+
+      <div class="entry-panel-foot">
+        <button type="submit" class="btn btn-primary">Salvar solução</button>
+      </div>
+    </form>
+  </section>
+
+  <div class="ledger">
+    {% for solucao in solucoes %}
+    <div class="ledger-row">
+      <span class="ledger-name">{{ solucao.nome }}</span>
+      <span class="ledger-type data">{{ solucao.concentracao_nominal }} mol/L</span>
+      <span class="ledger-meta">
+        {% if solucao.fator_correcao %}
+          <span class="data">fc = {{ solucao.fator_correcao }}</span>
+          <time class="data">padronizada em {{ solucao.data_padronizacao|date:"d M Y" }}</time>
+        {% else %}
+          <span class="badge-pending">não padronizada</span>
+        {% endif %}
+        <a href="{% url 'solucoes:padronizar' solucao.id %}" class="ledger-action">
+          {% if solucao.fator_correcao %}repadronizar{% else %}padronizar{% endif %}
+        </a>
+      </span>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+      <p>Nenhuma solução cadastrada ainda. Use o formulário acima para adicionar a primeira.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+{% endblock %}

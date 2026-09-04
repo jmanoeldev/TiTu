@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Padronizar {{ solucao.nome }} — TiTu{% endblock %}
+
+{#
+  Contexto esperado nesta view (views/solucoes.py):
+    solucao -> a SolucaoTitulante sendo padronizada
+    form    -> form de padronização (concentracao_padrao, volume_padrao, volume_gasto)
+#}
+
+{% block content %}
+
+<div class="wrap">
+
+  <div class="page-header">
+    <div>
+      <a href="{% url 'solucoes:lista' %}" class="back-link">← Minhas soluções</a>
+      <h1>Padronizar {{ solucao.nome }}</h1>
+      <p>Informe os dados do padrão primário usado para calcular o fator de correção.</p>
+    </div>
+  </div>
+
+  <section class="entry-panel standalone">
+
+    {% if form.errors %}
+    <p class="form-errors">Confira os campos abaixo antes de continuar.</p>
+    {% endif %}
+
+    <form method="post" action="{% url 'solucoes:padronizar' solucao.id %}">
+      {% csrf_token %}
+
+      <div class="field">
+        <label for="id_concentracao_padrao">Concentração do padrão primário (mol/L)</label>
+        <input type="number" step="0.00001" id="id_concentracao_padrao" name="concentracao_padrao" required>
+      </div>
+
+      <div class="field">
+        <label for="id_volume_padrao">Volume do padrão primário (mL)</label>
+        <input type="number" step="0.01" id="id_volume_padrao" name="volume_padrao" required>
+      </div>
+
+      <div class="field">
+        <label for="id_volume_gasto">Volume gasto da solução titulante (mL)</label>
+        <input type="number" step="0.01" id="id_volume_gasto" name="volume_gasto" required>
+      </div>
+
+      <div class="entry-panel-foot">
+        <button type="submit" class="btn btn-primary">Calcular e salvar</button>
+        <span class="hint">O fator de correção é calculado a partir desses valores.</span>
+      </div>
+    </form>
+
+    {% if solucao.fator_correcao %}
+    <p class="result-line">
+      Fator de correção atual: <span class="data">{{ solucao.fator_correcao }}</span>
+      <span class="hint">(padronizada em {{ solucao.data_padronizacao|date:"d M Y" }})</span>
+    </p>
+    {% endif %}
+
+  </section>
+
+</div>
+
+{% endblock %}
