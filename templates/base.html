@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}TiTu{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,460;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="wrap">
+      <a href="{% url 'home' %}" class="brand">
+        <!-- Marca: bureta simplificada pingando sobre um erlenmeyer -->
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M11 2H13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M12 2V9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M9.5 9H14.5L18 20.5C18.4 21.7 17.6 23 16.3 23H7.7C6.4 23 5.6 21.7 6 20.5L9.5 9Z"
+                stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M8.4 16.5H15.6" stroke="currentColor" stroke-width="1.4"/>
+        </svg>
+        TiTu
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="{% url 'home' %}"{% if request.resolver_match.url_name == 'home' %} aria-current="page"{% endif %}>Início</a></li>
+        {% if user.is_authenticated %}
+        <li><a href="{% url 'experimentos:lista' %}"{% if request.resolver_match.url_name == 'lista' %} aria-current="page"{% endif %}>Experimentos</a></li>
+        {% endif %}
+      </ul>
+
+      <div class="nav-auth">
+        {% if user.is_authenticated %}
+          <span class="hint" style="font-size:0.85rem; color:var(--ink-muted);">{{ user.username }}</span>
+          <form action="{% url 'logout' %}" method="post" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ghost btn-sm">Sair</button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn btn-ghost btn-sm">Entrar</a>
+          <a href="{% url 'cadastro' %}" class="btn btn-primary btn-sm">Cadastrar</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>TiTu — registro e cálculo de titulações.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

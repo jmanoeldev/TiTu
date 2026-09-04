@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}TiTu — registro e cálculo de titulações{% endblock %}
+
+{% block content %}
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-copy">
+      <h1>Suas titulações,<br>calculadas e organizadas.</h1>
+      <p class="lede">
+        Registre réplicas, aplique o fator de correção da sua solução titulante
+        e receba um alerta quando um resultado fugir do esperado — sem abrir
+        a planilha.
+      </p>
+      <div class="hero-actions">
+        <a href="{% url 'cadastro' %}" class="btn btn-primary">Criar conta</a>
+        <a href="{% url 'login' %}" class="btn-link">Já tenho conta</a>
+      </div>
+    </div>
+
+    <figure class="curve-figure">
+      <!-- Curva de titulação (pH x volume) com o ponto de equivalência marcado.
+           É a mesma leitura que qualquer técnico de química analítica reconhece
+           de cabeça — usada aqui como a marca visual central do site. -->
+      <svg viewBox="0 0 380 300" role="img" aria-labelledby="curveTitle">
+        <title id="curveTitle">Curva de titulação, com o ponto de equivalência destacado</title>
+
+        <line x1="45" y1="20" x2="45" y2="260" stroke="var(--line)" stroke-width="1.5"/>
+        <line x1="45" y1="260" x2="355" y2="260" stroke="var(--line)" stroke-width="1.5"/>
+        <text x="45" y="14" class="curve-label" text-anchor="middle">pH</text>
+        <text x="355" y="278" class="curve-label" text-anchor="end">V (mL)</text>
+
+        <path class="curve-path"
+              d="M55,232 C112,228 150,222 178,195 C196,176 199,120 203,98 C207,79 242,55 345,45" />
+
+        <circle class="curve-point" cx="201" cy="128" r="4.5" />
+        <line x1="201" y1="128" x2="201" y2="260" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="207" y="255" class="curve-label">ponto de equivalência</text>
+      </svg>
+    </figure>
+  </div>
+</section>
+
+<section class="features">
+  <div class="wrap">
+    <ul>
+      <li>
+        <h3>Cálculo automático</h3>
+        <p>A concentração do analito sai pronta a partir dos volumes que você mede — ácido-base, redox, complexométrica ou precipitação.</p>
+      </li>
+      <li>
+        <h3>Réplicas comparadas</h3>
+        <p>Média, desvio padrão e o teste Q de Dixon identificam quando uma réplica destoa das demais.</p>
+      </li>
+      <li>
+        <h3>Soluções padronizadas</h3>
+        <p>Cadastre o fator de correção uma vez e reutilize em todas as titulações seguintes.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+{% endblock %}
