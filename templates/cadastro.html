@@ -9,8 +9,17 @@
     <p class="lede">Leva menos de um minuto — sem cartão, sem planilha depois.</p>
 
     {% if form.errors %}
-    <p class="form-errors">Confira os campos abaixo antes de continuar.</p>
-    {% endif %}
+  <div class="form-errors">
+    {% for field in form %}
+      {% for error in field.errors %}
+        <p>{{ field.label }}: {{ error }}</p>
+      {% endfor %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+      <p>{{ error }}</p>
+    {% endfor %}
+  </div>
+{% endif %}
 
     <form method="post" action="{% url 'cadastro' %}">
       {% csrf_token %}
