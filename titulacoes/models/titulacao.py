@@ -25,6 +25,9 @@ class Titulacao(models.Model):
     # Volume (ou massa) da amostra usado na titulação
     volume_amostra = models.DecimalField( max_digits = 8, decimal_places = 2)
 
+    coeficiente_titulante = models.PositiveSmallIntegerField(default=1)
+    coeficiente_analito = models.PositiveSmallIntegerField(default=1)
+
     # Resultado calculado
     # Fica nulo até o sistema calcular e salvar
     concentracao_calculada = models.DecimalField(
